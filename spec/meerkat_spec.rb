@@ -10,13 +10,11 @@ describe 'Meerkat' do
   def app
     Meerkat.backend = Meerkat::Backend::InMemory.new
     Rack::Builder.new {
-      map "/" do
-        meerkat = Meerkat::RackAdapter.new do |m|
-          m.keep_alive = 0.1
-        end
-
-        run Thin::Async::Test.new(meerkat)
+      meerkat = Meerkat::RackAdapter.new do |m|
+        m.keep_alive = 0.1
+        m.timeout = 0.2
       end
+      run Thin::Async::Test.new(meerkat)
     }.to_app
   end
 
@@ -36,8 +34,9 @@ describe 'Meerkat' do
   end
   
   it 'should publish messages' do
-    get '/'
-    Meerkat.publish('/', 'foo')
-    assert_equal "foo", last_response.body.split("\n")[2]
+    get '/jada'
+    Meerkat.publish '/jada', 'foo'
+    puts last_response.body
+    assert_equal "data: \"foo\"", last_response.body.split("\n").last
   end
 end
