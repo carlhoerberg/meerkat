@@ -1,23 +1,32 @@
 !!!
 %head
   %title Meerkat test
+  %script{:src=>'https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js', :type => 'text/javascript'}
 %body
   %fieldset
     %legend Publish
-    %input{:name => 'message'}
-    %input{:type=>'submit', :value => 'Send'}
+    %form#pub{:method => :post}
+      %input{:name => 'message'}
+      %input{:type=>'submit', :value => 'Send'}
 
   %fieldset
     %legend Subscribe
     %p 
       Subscribing to 
-      %strong= request.env[:path_info]
+      %strong= @route
     %ul#stream
   :javascript
-    var source = new EventSource('/stream' + #{request.env[:path_info].to_json});
+    var source = new EventSource('/stream#{@route}');
     var stream = document.getElementById('stream');
     source.addEventListener('message', function(e) {
       var li = document.createElement('li');
-      p.innerHTML = e.data;
-      stream.appendChild(p);
+      li.innerHTML = JSON.parse(e.data);
+      stream.appendChild(li);
     }, false);
+
+    $(function() {
+      $("#pub").submit(function() {
+        $.post(this.action, $(this).serialize())
+        return false
+      });
+    })

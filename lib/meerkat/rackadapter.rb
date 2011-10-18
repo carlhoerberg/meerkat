@@ -18,6 +18,7 @@ module Meerkat
 
       path_info = Rack::Utils.unescape env["PATH_INFO"]
       Meerkat.subscribe(path_info) do |message|
+        puts "responding"
         response << "data: #{message}\n\n"
       end
       EM.add_periodic_timer(@keep_alive || 20) do

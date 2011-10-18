@@ -1,3 +1,11 @@
+PATH
+  remote: .
+  specs:
+    meerkat (0.0.1)
+      eventmachine
+      thin_async
+      yajl-ruby
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -23,10 +31,7 @@ PLATFORMS
 
 DEPENDENCIES
   em-minitest-spec
-  eventmachine
+  meerkat!
   minitest
-  rack
   rack-test
   thin-async-test
-  thin_async
-  yajl-ruby

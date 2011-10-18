@@ -1,5 +1,7 @@
+require_relative 'meerkat/version'
 require_relative 'meerkat/rackadapter'
 require_relative 'meerkat/backend/inmemory'
+
 require 'yajl'
 
 module Meerkat

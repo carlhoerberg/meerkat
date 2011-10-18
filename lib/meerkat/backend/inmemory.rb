@@ -16,6 +16,7 @@ module Meerkat
         puts "sub to #{route}"
         @channel.subscribe do |msg|
           puts "got: #{msg}"
+          puts [msg[:route], route]
           callback.call(msg[:json]) if msg[:route] == route
         end
       end

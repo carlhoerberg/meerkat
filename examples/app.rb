@@ -1,12 +1,13 @@
 require 'sinatra/base'
-require './lib/meerkat' # require 'meerkat' when using the gem
 
 class App < Sinatra::Base
   get '*' do
-    haml :pubsub
+    @route = params[:splat].join
+    haml :index
   end
   post '*' do
-    Meerkat.publish params[:splat], params[:message]
+    Meerkat.publish params[:splat].join, params[:message]
+    204
   end
 end
 
