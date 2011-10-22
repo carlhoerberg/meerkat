@@ -28,15 +28,9 @@ describe 'Meerkat' do
     get '/'
     assert_equal "retry: 3000\n", last_response.body.lines.first
   end
+
   it 'should periodically emit a comment to keep alive the connection' do
     get '/'
     assert_equal ":", last_response.body.split("\n")[1]
-  end
-  
-  it 'should publish messages' do
-    get '/jada'
-    Meerkat.publish '/jada', 'foo'
-    puts last_response.body
-    assert_equal "data: \"foo\"", last_response.body.split("\n").last
   end
 end
