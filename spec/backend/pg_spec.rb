@@ -1,17 +1,17 @@
 require 'minitest/autorun'
 require 'em/minitest/spec'
-require './lib/meerkat/backend/redis'
+require './lib/meerkat/backend/pg'
 
 describe 'Postgres backend' do
   include EM::MiniTest::Spec
 
   it 'can publish and subscribe' do
     b = Meerkat::Backend::PG.new :dbname => 'postgres'
-    b.subscribe 'route' do |msg| 
+    b.subscribe '/' do |msg| 
       assert_equal 'messsage', msg
       done!
     end
-    b.publish 'route', 'messsage'
+    b.publish '/', 'messsage'
     wait!
   end
 

@@ -14,26 +14,28 @@ module Meerkat
 
       def subscribe(route, &callback)
         pg = PGconn.connect @pg_uri
-        pg.exec "LISTEN #{route}"
-        defer_notify(pg, &callback)
-        pg
-      end
-
-      def defer_notify(pg, &callback)
-        EM.defer(lambda {
-          msg = nil
-          pg.wait_for_notify do |route, pid, payload| 
-            msg = payload
-          end
-          msg
-        }, lambda { |msg| 
-          callback.call msg
-          defer_notify(pg, &callback)
-        })
+        pg.exec "LISTEN #{PGconn.quote_ident route}"
+        EM.watch(pg.socket, SubscribeClient, pg, callback) { |c| c.notify_readable = true }
       end
 
       def unsubscribe(pg)
-        pg.finish
+        pg.detach
+      end
+
+      module SubscribeClient
+        def initialize(pg, cb)
+          @pg = pg
+          @cb = cb
+        end
+        def notify_readable
+          @pg.consume_input
+          msg = @pg.notifies
+          @cb.call(msg[:extra]) if msg
+        end
+        
+        def unbind
+          @pg.close
+        end
       end
     end
   end

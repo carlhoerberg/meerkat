@@ -7,12 +7,12 @@ describe 'Redis backend' do
 
   it 'can publish and subscribe' do
     b = Meerkat::Backend::Redis.new
-    b.subscribe 'route' do |msg| 
+    b.subscribe '/' do |msg| 
       assert_equal 'messsage', msg
       done!
     end
     EM.next_tick {
-      b.publish 'route', 'messsage'
+      b.publish '/', 'messsage'
     }
     wait!
   end
