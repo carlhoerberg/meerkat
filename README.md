@@ -16,43 +16,43 @@ Usage
 
 config.ru: 
 
-    ```ruby```
-    require 'bundler/setup'
-    require 'meerkat' 
-    require './app'
+```ruby
+require 'bundler/setup'
+require 'meerkat' 
+require './app'
 
-    #Meerkat.backend = Meerkat::Backend::InMemory.new 
-    #Meerkat.backend = Meerkat::Backend::Redis.new 'redis://localhost/0'
-    Meerkat.backend = Meerkat::Backend::PG.new :dbname => 'postgres'
-    map '/' do
-      run App
-    end
-    map '/stream' do
-      run Meerkat::RackAdapter.new
-    end
-    ```
+#Meerkat.backend = Meerkat::Backend::InMemory.new 
+#Meerkat.backend = Meerkat::Backend::Redis.new 'redis://localhost/0'
+Meerkat.backend = Meerkat::Backend::PG.new :dbname => 'postgres'
+map '/' do
+  run App
+end
+map '/stream' do
+  run Meerkat::RackAdapter.new
+end
+```
 
 On the client:
 
-    ```javascript```
-    var source = new EventSource('/stream/mychannel');
-    var streamList = document.getElementById('stream');
-    source.addEventListener('message', function(e) {
-      var li = document.createElement('li');
-      li.innerHTML = JSON.parse(e.data);
-      streamList.appendChild(li);
-    }, false);
-    ```
+```javascript
+var source = new EventSource('/stream/mychannel');
+var streamList = document.getElementById('stream');
+source.addEventListener('message', function(e) {
+  var li = document.createElement('li');
+  li.innerHTML = JSON.parse(e.data);
+  streamList.appendChild(li);
+}, false);
+```
 
 To push things:
 
-    ```ruby```
-    Meerkat.publish "/mychannel", {:any => hash}
-    Meerkat.publish "/mychannel/2", 'any string'
-    Meerkat.publish "/mychannel/3", any_object
-    ```
+```ruby
+Meerkat.publish "/mychannel", {:any => hash}
+Meerkat.publish "/mychannel/2", 'any string'
+Meerkat.publish "/mychannel/3", any_object
+```
 
-The published object will be JSON serialized (with [Yajl](https://github.com/brianmario/yajl-ruby)) before sent to the backend. Deserialize it in the client. 
+The published objects will be JSON serialized (with [Yajl](https://github.com/brianmario/yajl-ruby)) before sent to the backend. Deserialize it in the client. 
 
 Read more about Server-Sent Events and the EventSource API on [HTML5Rocks](http://www.html5rocks.com/en/tutorials/eventsource/basics/).
 
