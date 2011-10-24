@@ -33,7 +33,6 @@ module Meerkat
 
       EM.add_timer(@timeout) { body.succeed } if @timeout
 
-
       [-1, {}, []]
     end
 

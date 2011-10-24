@@ -7,9 +7,9 @@ Gem::Specification.new do |s|
   s.version     = Meerkat::VERSION
   s.authors     = ["Carl Hörberg"]
   s.email       = ["carl.hoerberg@gmail.com"]
-  s.homepage    = ""
-  s.summary     = %q{Ruby EventSource, Rack style}
-  s.description = %q{Requires Thin}
+  s.homepage    = "https://github.com/carlhoerberg/meerkat"
+  s.summary     = %q{Rack middleware for HTML5 Server-Sent Events, with swappable backends}
+  s.description = %q{Requires an evented Ruby dispatcher, like Thin}
 
   s.rubyforge_project = "meerkat"
 
@@ -20,12 +20,12 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "minitest"
   s.add_development_dependency "rack-test"
+  s.add_development_dependency "thin_async"
   s.add_development_dependency "thin-async-test"
   s.add_development_dependency "em-minitest-spec"
 
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "eventmachine"
-  s.add_runtime_dependency "thin_async"
   s.add_runtime_dependency "em-hiredis"
   s.add_runtime_dependency "pg"
 end
