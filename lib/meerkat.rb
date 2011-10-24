@@ -1,6 +1,7 @@
 require_relative 'meerkat/version'
 require_relative 'meerkat/rackadapter'
 require_relative 'meerkat/backend/inmemory'
+require_relative 'meerkat/backend/redis'
 
 require 'yajl'
 
@@ -18,6 +19,10 @@ module Meerkat
 
   def subscribe(route, &callback)
     @backend.subscribe(route, &callback)
+  end
+
+  def unsubscribe(sid)
+    @backend.unsubscribe(sid)
   end
 end
 

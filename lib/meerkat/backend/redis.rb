@@ -1,22 +1,13 @@
-require 'uri'
-require 'hiredis'
-require 'redis/connection/synchrony'
-require 'redis'
+require 'em-hiredis'
 
 module Meerkat
   module Backend
     class Redis
-      def initialize(redis_uri = 'redis://localhost/0')
-        u = URI.parse redis_uri
-        h = {
-          :host => u.host,
-          :port => u.port || 6379,
-          :user => u.user,
-          :password => u.password,
-          :db => u.path ? u.path[1..-1].to_i : 0 
+      def initialize(redis_uri = nil)
+        @redis_uri = redis_uri
+        EM.next_tick {
+          @pub = EM::Hiredis.connect redis_uri
         }
-        @pub = ::Redis.new h
-        @sub = ::Redis.new h
       end
 
       def publish(route, json)
@@ -24,22 +15,16 @@ module Meerkat
       end
 
       def subscribe(route, &callback)
-        Fiber.new {
-          @sub.subscribe route do |on|
-            on.message do |channel, message|
-              callback.call(message) 
-            end
-          end
-        }.resume
+        sub = EM::Hiredis.connect @redis_uri
+        sub.subscribe route 
+        sub.on :message do |channel, message|
+          callback.call(message) 
+        end
+        sub
       end
 
-      def quit
-        unsubscribe
-        @pub.quit
-        @sub.quit
-      end
-      def unsubscribe
-        @sub.unsubscribe
+      def unsubscribe(sub)
+        sub.close_connection
       end
     end
   end

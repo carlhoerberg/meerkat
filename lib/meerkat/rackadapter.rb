@@ -1,5 +1,3 @@
-require 'thin/async'
-
 module Meerkat
   class RackAdapter
     attr_accessor :keep_alive
@@ -11,21 +9,50 @@ module Meerkat
     end
 
     def call(env)
-      response = Thin::AsyncResponse.new(env)
-      response.status = 200
-      response.headers['Content-Type'] = 'text/event-stream' 
-      response << "retry: #{@retry || 3000}\n"
+      body = DeferrableBody.new
+
+      EM.next_tick { 
+        env['async.callback'].call [200, {'Content-Type' => 'text/event-stream'}, body] 
+      }
+
+      EM.next_tick {
+        body << "retry: #{@retry || 3000}\n"
+      }
 
       path_info = Rack::Utils.unescape env["PATH_INFO"]
-      Meerkat.subscribe(path_info) do |message|
-        puts "responding"
-        response << "data: #{message}\n\n"
+      sub = Meerkat.subscribe(path_info) do |message|
+        body << "data: #{message}\n\n"
       end
+      body.errback {
+        Meerkat.unsubscribe sub
+      }
+
       EM.add_periodic_timer(@keep_alive || 20) do
-        response << ":\n"
+        body << ":\n"
       end
-      EM.add_timer(@timeout) { response.done } if @timeout
-      response.finish
+
+      EM.add_timer(@timeout) { body.succeed } if @timeout
+
+
+      [-1, {}, []]
+    end
+
+    class DeferrableBody
+      include EventMachine::Deferrable
+
+      def call(body)
+        body.each do |chunk|
+          @body_callback.call(chunk)
+        end
+      end
+
+      def <<(str)
+        call([str])
+      end
+
+      def each(&blk)
+        @body_callback = blk
+      end
     end
   end
 end

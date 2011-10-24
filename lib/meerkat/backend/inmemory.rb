@@ -16,6 +16,10 @@ module Meerkat
           callback.call(msg[:json]) if msg[:route] == route
         end
       end
+
+      def unsubscribe(sid)
+        @channel.unsubscribe(sid)
+      end
     end
   end
 end

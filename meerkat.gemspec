@@ -26,7 +26,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "eventmachine"
   s.add_runtime_dependency "thin_async"
-  s.add_runtime_dependency "hiredis"
-  s.add_runtime_dependency "em-synchrony"
-  s.add_runtime_dependency "redis"
+  s.add_runtime_dependency "em-hiredis"
 end

@@ -21,4 +21,10 @@ describe 'The in memory backend' do
     im.publish 'route2', 'messsage'
     assert_equal nil, @recivied
   end
+  it 'can unbsubscribe' do
+    im = Meerkat::Backend::InMemory.new
+    sid = im.subscribe 'route' do |msg| 
+    end
+    im.unsubscribe sid
+  end
 end
