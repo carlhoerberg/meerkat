@@ -14,8 +14,9 @@ Supported backends:
 Usage
 =====
 
-```config.ru```:
+config.ru: 
 
+    ```ruby```
     require 'bundler/setup'
     require 'meerkat' 
     require './app'
@@ -29,9 +30,11 @@ Usage
     map '/stream' do
       run Meerkat::RackAdapter.new
     end
+    ```
 
 On the client:
 
+    ```javascript```
     var source = new EventSource('/stream/mychannel');
     var streamList = document.getElementById('stream');
     source.addEventListener('message', function(e) {
@@ -39,12 +42,15 @@ On the client:
       li.innerHTML = JSON.parse(e.data);
       streamList.appendChild(li);
     }, false);
+    ```
 
 To push things:
 
+    ```ruby```
     Meerkat.publish "/mychannel", {:any => hash}
     Meerkat.publish "/mychannel/2", 'any string'
     Meerkat.publish "/mychannel/3", any_object
+    ```
 
 The published object will be JSON serialized (with [Yajl](https://github.com/brianmario/yajl-ruby)) before sent to the backend. Deserialize it in the client. 
 
