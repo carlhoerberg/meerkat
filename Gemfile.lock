@@ -2,8 +2,10 @@ PATH
   remote: .
   specs:
     meerkat (0.0.1)
-      em-hiredis
+      em-synchrony
       eventmachine
+      hiredis
+      redis
       thin_async
       yajl-ruby
 
@@ -11,16 +13,17 @@ GEM
   remote: http://rubygems.org/
   specs:
     daemons (1.1.4)
-    em-hiredis (0.1.0)
-      hiredis (~> 0.3.0)
     em-minitest-spec (1.1.1)
       eventmachine
+    em-synchrony (0.2.0)
+      eventmachine (>= 0.12.9)
     eventmachine (0.12.10)
     hiredis (0.3.2)
     minitest (2.6.1)
     rack (1.3.4)
     rack-test (0.6.1)
       rack (>= 1.0)
+    redis (2.2.2)
     thin (1.2.11)
       daemons (>= 1.0.9)
       eventmachine (>= 0.12.6)

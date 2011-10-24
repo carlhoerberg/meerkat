@@ -22,8 +22,11 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rack-test"
   s.add_development_dependency "thin-async-test"
   s.add_development_dependency "em-minitest-spec"
+
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "eventmachine"
   s.add_runtime_dependency "thin_async"
-  s.add_runtime_dependency "em-hiredis"
+  s.add_runtime_dependency "hiredis"
+  s.add_runtime_dependency "em-synchrony"
+  s.add_runtime_dependency "redis"
 end
