@@ -8,11 +8,11 @@ Requires an evented server, like [Thin](http://code.macournoyer.com/thin/).
 Supported backends: 
 
  * In memory, using [EventMachine Channels](http://eventmachine.rubyforge.org/EventMachine/Channel.html), good for single server usage.
- * Redis, using [em-hiredis](https://github.com/mloughran/em-hiredis#readme). 
+ * Redis, using [em-hiredis](https://github.com/mloughran/em-hiredis#readme) and the [Pub/Sub API](http://redis.io/topics/pubsub). 
  * Postgres, using the [Notify/Listen API](http://www.postgresql.org/docs/9.1/static/sql-notify.html). Note, this is totally async, no polling.
 
 Usage
-=====
+-----
 
 config.ru: 
 
@@ -57,7 +57,7 @@ The published objects will be JSON serialized (with [Yajl](https://github.com/br
 Read more about Server-Sent Events and the EventSource API on [HTML5Rocks](http://www.html5rocks.com/en/tutorials/eventsource/basics/).
 
 License
-======
+-------
 (MIT license)
 
 Copyright (C) 2011 by Carl Hörberg
