@@ -1,9 +1,10 @@
 PATH
   remote: .
   specs:
-    meerkat (0.0.1)
+    meerkat (0.1.0)
       em-hiredis
       eventmachine
+      pg
       thin_async
       yajl-ruby
 
@@ -18,6 +19,7 @@ GEM
     eventmachine (0.12.10)
     hiredis (0.3.2)
     minitest (2.6.1)
+    pg (0.11.0)
     rack (1.3.4)
     rack-test (0.6.1)
       rack (>= 1.0)

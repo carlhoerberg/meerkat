@@ -2,6 +2,7 @@ require_relative 'meerkat/version'
 require_relative 'meerkat/rackadapter'
 require_relative 'meerkat/backend/inmemory'
 require_relative 'meerkat/backend/redis'
+require_relative 'meerkat/backend/pg'
 
 require 'yajl'
 

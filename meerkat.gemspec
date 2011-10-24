@@ -27,4 +27,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "eventmachine"
   s.add_runtime_dependency "thin_async"
   s.add_runtime_dependency "em-hiredis"
+  s.add_runtime_dependency "pg"
 end
