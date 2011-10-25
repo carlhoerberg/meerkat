@@ -3,13 +3,18 @@ Meerkat
 
 Rack middleware for [Server-Sent Events (HTML5 SSE)](http://www.html5rocks.com/en/tutorials/eventsource/basics/).
 
-Requires an evented server, like [Thin](http://code.macournoyer.com/thin/).
+Requires an [EventMachine](https://github.com/eventmachine/eventmachine#readme) backed server, like [Thin](http://code.macournoyer.com/thin/) or [Rainbows](http://rainbows.rubyforge.org/) (with the EventMachine backend only).
 
 Supported backends: 
 
  * In memory, using [EventMachine Channels](http://eventmachine.rubyforge.org/EventMachine/Channel.html), good for single server usage.
  * Redis, using [em-hiredis](https://github.com/mloughran/em-hiredis#readme) and the [Pub/Sub API](http://redis.io/topics/pubsub). 
- * Postgres, using the [Notify/Listen API](http://www.postgresql.org/docs/9.1/static/sql-notify.html). Note, this is fully async, no polling. Although, it requires PostgreSQL 9.0 or higher, so unfortunately Heroku's Shared Database can't be used (8.3) but their dedicated database offerings can. 
+ * Postgres, using the [Notify/Listen API](http://www.postgresql.org/docs/9.1/static/sql-notify.html). 
+   * When a message is published the topic and json payload is inserted into the 'meerkat_pubsub' table, and then a NOTIFY is issued.
+   * Listening clients recivies the notification and reads the message from the table and writes it to the Event Stream of its clients.
+   * On the next publish all messages older than 5 seconds are deleted. 
+   * No polling is ever done.
+   * This works with PostgreSQL 8 and higher (tested with 8.3 and 9.1). 
 
 Usage
 -----
