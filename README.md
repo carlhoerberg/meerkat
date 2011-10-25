@@ -9,7 +9,7 @@ Supported backends:
 
  * In memory, using [EventMachine Channels](http://eventmachine.rubyforge.org/EventMachine/Channel.html), good for single server usage.
  * Redis, using [em-hiredis](https://github.com/mloughran/em-hiredis#readme) and the [Pub/Sub API](http://redis.io/topics/pubsub). 
- * Postgres, using the [Notify/Listen API](http://www.postgresql.org/docs/9.1/static/sql-notify.html). Note, this is totally async, no polling.
+ * Postgres, using the [Notify/Listen API](http://www.postgresql.org/docs/9.1/static/sql-notify.html). Note, this is fully async, no polling. Although, it requires PostgreSQL 9.0 or higher, so unfortunately Heroku's Shared Database can't be used (8.3) but their dedicated database offerings can. 
 
 Usage
 -----
@@ -55,6 +55,14 @@ Meerkat.publish "/mychannel/3", any_object
 The published objects will be JSON serialized (with [Yajl](https://github.com/brianmario/yajl-ruby)) before sent to the backend. Deserialize it in the client. 
 
 Read more about Server-Sent Events and the EventSource API on [HTML5Rocks](http://www.html5rocks.com/en/tutorials/eventsource/basics/).
+
+Examples
+--------
+
+A simple demo can be seen here: 
+http://meerkat-demo.herokuapp.com/
+
+It's deployed on [Heroku's Cedar stack](http://devcenter.heroku.com/articles/cedar). It's using the Redis backend, thanks to [Redis To Go](https://redistogo.com/)'s free Nano offering.
 
 License
 -------
