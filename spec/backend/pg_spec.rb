@@ -15,6 +15,19 @@ describe 'Postgres backend' do
     wait!
   end
 
+  it 'can publish and subscribe multiple messages' do
+    b = Meerkat::Backend::PG.new :dbname => 'postgres'
+    i = 5
+    j = 0
+    b.subscribe '/' do |msg| 
+      j += 1
+      assert_equal 'messsage', msg
+      done! if j == i
+    end
+    i.times { b.publish '/', 'messsage' }
+    wait!
+  end
+
   it 'can unsubscribe' do
     b = Meerkat::Backend::PG.new :dbname => 'postgres'
     sid = b.subscribe 'route' do |msg| 

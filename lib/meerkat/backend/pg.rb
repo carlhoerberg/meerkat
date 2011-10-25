@@ -1,38 +1,72 @@
 require 'pg'
+require 'date'
 
 module Meerkat
   module Backend
     class PG
+      TABLENAME = 'meerkat_pubsub'.freeze
+
       def initialize(pg_uri = nil)
-        @pg_uri = pg_uri
+        @subs = {}
         @pg = PGconn.connect pg_uri
+        @pg.exec 'SET client_min_messages = warning'
+        @pg.exec "CREATE TABLE IF NOT EXISTS #{TABLENAME} (topic varchar(1024), json text, timestamp timestamp default now())"
+
+        @last_check = @pg.exec('SELECT now() as now').first['now']
+
+        @sub_client = PGconn.connect pg_uri
+        @sub_client.exec "LISTEN #{TABLENAME}"
+        EM.next_tick {
+          EM.watch(@sub_client.socket, SubscribeClient, @sub_client, lambda {on_notify}) { |c| c.notify_readable = true }
+        }
+      end
+
+      def on_notify
+        @pg.async_exec "SELECT topic, json, timestamp FROM #{TABLENAME} WHERE timestamp > $1 ORDER BY timestamp ASC", [@last_check] do |rows|
+          rows.each do |row| 
+            @last_check = row['timestamp']
+            @subs.each do |topic, callbacks|
+              if topic == row['topic'] 
+                callbacks.each { |cb| cb.call row['json'] }
+              end
+            end
+          end
+        end
       end
 
       def publish(route, json)
-        @pg.exec "SELECT pg_notify($1, $2)", [route, json]
+        @pg.transaction do |conn|
+          conn.exec "DELETE FROM #{TABLENAME} WHERE timestamp < now() - interval '5 seconds'"
+          conn.exec "INSERT INTO #{TABLENAME} (topic, json) VALUES ($1, $2)", [route, json]
+          conn.exec "NOTIFY #{TABLENAME}"
+        end
       end
 
       def subscribe(route, &callback)
-        pg = PGconn.connect @pg_uri
-        pg.exec "LISTEN #{PGconn.quote_ident route}"
-        EM.watch(pg.socket, SubscribeClient, pg, callback) { |c| c.notify_readable = true }
+        if @subs[route]
+          @subs[route] << callback
+        else
+          @subs[route] = [callback]
+        end
+        [route, callback]
       end
 
-      def unsubscribe(pg)
-        pg.detach
+      def unsubscribe(sid)
+        @subs[sid[0]].delete sid[1]
       end
 
       module SubscribeClient
         def initialize(pg, cb)
           @pg = pg
           @cb = cb
+          @last_check = Time.now
         end
+
         def notify_readable
           @pg.consume_input
-          msg = @pg.notifies
-          @cb.call(msg[:extra]) if msg
+          @cb.call if @pg.notifies
         end
-        
+
         def unbind
           @pg.close
         end
