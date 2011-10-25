@@ -10,7 +10,8 @@ module Meerkat
         @subs = {}
         @pg = PGconn.connect pg_uri
         @pg.exec 'SET client_min_messages = warning'
-        @pg.exec "CREATE TABLE IF NOT EXISTS #{TABLENAME} (topic varchar(1024), json text, timestamp timestamp default now())"
+        table = @pg.exec "SELECT true FROM pg_tables WHERE tablename = $1", [TABLENAME]
+        @pg.exec "CREATE TABLE #{TABLENAME} (topic varchar(1024), json text, timestamp timestamp default now())" if table.count == 0
 
         @last_check = @pg.exec('SELECT now() as now').first['now']
 
