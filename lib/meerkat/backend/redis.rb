@@ -12,30 +12,34 @@ module Meerkat
         }
       end
 
-      def publish(route, json)
-        @pub.publish route, json
+      def publish(topic, json)
+        @pub.publish topic, json
       end
 
-      def subscribe(route, &callback)
-        if @subs[route]
-          @subs[route] << callback
+      def subscribe(topic, &callback)
+        if @subs[topic]
+          @subs[topic] << callback
         else
-          @subs[route] = [ callback ]
+          @subs[topic] = [ callback ]
           EM.next_tick {
-            @sub.subscribe route 
-            @sub.on :message do |channel, message|
-              @subs[route].each { |c| c.call message }
+            @sub.psubscribe topic 
+            @sub.on :pmessage do |topic, channel, message|
+              @subs[topic].each { |c| c.call channel, message }
             end
           }
         end
-        [route, callback]
+        [topic, callback]
       end
 
       def unsubscribe(sub)
-        @subs[sub[0]].delete sub[1]
-        EM.next_tick {
-          @sub.unsubscribe(sub[0]) if @subs[sub[0]].empty?
-        }
+        topic, cb = sub
+        @subs[topic].delete cb
+        if @subs[topic].empty?
+          EM.next_tick do
+            @subs.delete topic 
+            @sub.punsubscribe(topic) 
+          end
+        end
       end
     end
   end

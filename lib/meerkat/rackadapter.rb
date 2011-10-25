@@ -1,10 +1,13 @@
 module Meerkat
   class RackAdapter
-    attr_accessor :keep_alive
     attr_accessor :retry
     attr_accessor :timeout
+    attr_accessor :keep_alive
 
     def initialize(app = nil, &blk)
+      @retry = 3000
+      @timeout = false
+      @keep_alive = 20
       blk.call(self) if blk
     end
 
@@ -14,24 +17,18 @@ module Meerkat
       EM.next_tick { 
         env['async.callback'].call [200, {'Content-Type' => 'text/event-stream'}, body] 
       }
-
-      EM.next_tick {
-        body << "retry: #{@retry || 3000}\n"
-      }
+      EM.next_tick { body << "retry: #{@retry}\n" }
+      EM.add_periodic_timer(@keep_alive) { body << ":\n" }
+      EM.add_timer(@timeout) { body.succeed } if @timeout
 
       path_info = Rack::Utils.unescape env["PATH_INFO"]
-      sub = Meerkat.subscribe(path_info) do |message|
-        body << "data: #{message}\n\n"
+      sub = Meerkat.subscribe(path_info) do |topic, json|
+        body << "event: #{topic}\n"
+        body << "data: #{json}\n\n"
       end
-      body.errback {
+      env['async.close'].callback do
         Meerkat.unsubscribe sub
-      }
-
-      EM.add_periodic_timer(@keep_alive || 20) do
-        body << ":\n"
       end
-
-      EM.add_timer(@timeout) { body.succeed } if @timeout
 
       [-1, {}, []]
     end

@@ -5,26 +5,30 @@ require './lib/meerkat/backend/inmemory'
 describe 'The in memory backend' do
   include EM::MiniTest::Spec
 
-  it 'can publish and subscribe' do
-    im = Meerkat::Backend::InMemory.new
-    im.subscribe 'route' do |msg| 
-      @recivied = msg
-    end
-    im.publish 'route', 'messsage'
-    assert_equal 'messsage', @recivied 
+  before do
+    @im = Meerkat::Backend::InMemory.new
   end
-  it 'can does only subscribe to specific routes' do
-    im = Meerkat::Backend::InMemory.new
-    im.subscribe 'route' do |msg| 
-      @recivied = msg
+
+  it 'can publish and subscribe' do
+    @im.subscribe 'route' do |topic, msg| 
+      assert_equal 'route', topic
+      assert_equal 'foo', msg
+      done!
     end
-    im.publish 'route2', 'messsage'
-    assert_equal nil, @recivied
+    @im.publish 'route', 'foo'
+    wait!
+  end
+  it 'can subscribe to wildcards' do
+    @im.subscribe '/foo/*' do |topic, msg| 
+      assert_equal '/foo/bar', topic
+      assert_equal 'barfoo', msg
+      done!
+    end
+    @im.publish '/foo/bar', 'barfoo'
+    wait!
   end
   it 'can unbsubscribe' do
-    im = Meerkat::Backend::InMemory.new
-    sid = im.subscribe 'route' do |msg| 
-    end
-    im.unsubscribe sid
+    sid = @im.subscribe 'route' do |topic, msg| end
+    @im.unsubscribe sid
   end
 end

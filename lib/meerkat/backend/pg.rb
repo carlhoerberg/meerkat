@@ -16,10 +16,10 @@ module Meerkat
 
       def publish(route, json)
         @pg.transaction do |conn|
-          conn.exec "DELETE FROM #{TABLENAME} WHERE timestamp < now() - interval '5 seconds'"
           conn.exec "INSERT INTO #{TABLENAME} (topic, json) VALUES ($1, $2)", [route, json]
           conn.exec "NOTIFY #{TABLENAME}"
         end
+        @pg.async_exec "DELETE FROM #{TABLENAME} WHERE timestamp < now() - interval '5 seconds'"
       end
 
       def subscribe(route, &callback)
@@ -56,8 +56,8 @@ module Meerkat
           rows.each do |row| 
             @last_check = row['timestamp']
             @subs.each do |topic, callbacks|
-              if topic == row['topic'] 
-                callbacks.each { |cb| cb.call row['json'] }
+              if File.fnmatch? topic, row['topic']
+                callbacks.each { |cb| cb.call row['topic'], row['json'] }
               end
             end
           end

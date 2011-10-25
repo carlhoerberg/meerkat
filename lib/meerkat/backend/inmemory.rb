@@ -7,13 +7,15 @@ module Meerkat
         @channel = EventMachine::Channel.new
       end
 
-      def publish(route, json)
-        @channel.push({:route => route, :json => json})
+      def publish(topic, json)
+        @channel.push({:topic => topic, :json => json})
       end
 
-      def subscribe(route, &callback)
+      def subscribe(topic, &callback)
         @channel.subscribe do |msg|
-          callback.call(msg[:json]) if msg[:route] == route
+          if File.fnmatch? topic, msg[:topic]
+            callback.call msg[:topic], msg[:json]
+          end
         end
       end
 
