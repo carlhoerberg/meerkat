@@ -2,12 +2,13 @@ require 'sinatra/base'
 require 'haml'
 
 class App < Sinatra::Base
-  get '*' do
-    @route = params[:splat].join
+  get '/' do
     haml :index
   end
-  post '*' do
-    Meerkat.publish params[:splat].join, params[:message]
+
+  post '/' do
+    puts params
+    Meerkat.publish params[:topic], params[:message]
     204
   end
 end

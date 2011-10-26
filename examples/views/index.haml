@@ -6,27 +6,47 @@
   %fieldset
     %legend Publish
     %form#pub{:method => :post}
-      %input{:name => 'message'}
-      %input{:type=>'submit', :value => 'Send'}
+      %label
+        Topic:
+        %input{:name => 'topic', :value => 'foo'}
+      %label
+        Message:
+        %input{:name => 'message'}
+      %input{:type => 'submit', :value => 'Send'}
 
   %fieldset
     %legend Subscribe
-    %p 
-      Subscribing to 
-      %strong= @route
+    %label
+      Subscribe to 
+      %input#sub_topic{:name => 'topic', :value => 'foo'}
+    %input#start_subscribe{:type => 'submit', :value => 'Start!'}
+
     %ul#stream
+
   :javascript
-    var source = new EventSource('/stream#{@route}');
-    var stream = document.getElementById('stream');
-    source.addEventListener('message', function(e) {
-      var li = document.createElement('li');
-      li.innerHTML = JSON.parse(e.data);
-      stream.appendChild(li);
-    }, false);
+    var source;
+    function subscribe_to(topic) {
+      if (source != null) { source.close() }
+      source = new EventSource('/stream/' + topic)
+      var stream = document.getElementById('stream')
+      source.onmessage = function(e) {
+        console.log(e)
+        var li = document.createElement('li')
+        li.innerHTML = JSON.parse(e.data)
+        stream.appendChild(li)
+      }
+    }
 
     $(function() {
       $("#pub").submit(function() {
         $.post(this.action, $(this).serialize())
         return false
       });
+
+      $("#start_subscribe").click(function() {
+        subscribe_to($("#sub_topic").val())
+        return false
+      });
+
+      subscribe_to($("#sub_topic").val())
     })
