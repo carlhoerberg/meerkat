@@ -26,7 +26,7 @@ module Meerkat
         body << "event: #{topic}\n"
         body << "data: #{json}\n\n"
       end
-      env['async.close'].callback do
+      body.errback do
         Meerkat.unsubscribe sub
       end
 
