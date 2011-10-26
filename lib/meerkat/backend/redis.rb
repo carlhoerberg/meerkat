@@ -4,12 +4,11 @@ module Meerkat
   module Backend
     class Redis
       def initialize(redis_uri = nil)
-        @redis_uri = redis_uri
         @subs = {}
-        EM.next_tick { 
+        EM.next_tick do
           @sub = EM::Hiredis.connect redis_uri 
           @pub = EM::Hiredis.connect redis_uri 
-        }
+        end
       end
 
       def publish(topic, json)
@@ -21,12 +20,12 @@ module Meerkat
           @subs[topic] << callback
         else
           @subs[topic] = [ callback ]
-          EM.next_tick {
+          EM.next_tick do
             @sub.psubscribe topic 
             @sub.on :pmessage do |topic, channel, message|
-              @subs[topic].each { |c| c.call channel, message }
+              @subs[topic].each { |cb| cb.call channel, message }
             end
-          }
+          end
         end
         [topic, callback]
       end
