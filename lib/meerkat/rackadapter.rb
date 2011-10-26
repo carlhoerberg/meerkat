@@ -14,9 +14,11 @@ module Meerkat
     def call(env)
       body = DeferrableBody.new
 
-      EM.next_tick { 
-        env['async.callback'].call [200, {'Content-Type' => 'text/event-stream'}, body] 
+      headers = {
+        'Content-Type' => 'text/event-stream',
+        'X-Accel-Buffering' => 'no', # http://wiki.nginx.org/X-accel#X-Accel-Buffering
       }
+      EM.next_tick { env['async.callback'].call [200, headers, body] }
       EM.next_tick { body << "retry: #{@retry}\n" }
       EM.add_periodic_timer(@keep_alive) { body << ":\n" }
       EM.add_timer(@timeout) { body.succeed } if @timeout
