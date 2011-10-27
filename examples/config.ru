@@ -3,8 +3,8 @@ require 'meerkat'
 require './app'
 
 #Meerkat.backend = Meerkat::Backend::InMemory.new
-#Meerkat.backend = Meerkat::Backend::Redis.new 
-Meerkat.backend = Meerkat::Backend::PG.new :dbname => 'postgres'
+Meerkat.backend = Meerkat::Backend::Redis.new 
+#Meerkat.backend = Meerkat::Backend::PG.new :dbname => 'postgres'
 map '/' do
   run App
 end

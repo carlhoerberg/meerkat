@@ -7,7 +7,6 @@ class App < Sinatra::Base
   end
 
   post '/' do
-    puts params
     Meerkat.publish params[:topic], params[:message]
     204
   end
