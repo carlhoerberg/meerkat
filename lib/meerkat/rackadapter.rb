@@ -25,7 +25,7 @@ module Meerkat
 
       path_info = Rack::Utils.unescape env["PATH_INFO"]
       sub = Meerkat.subscribe(path_info) do |topic, json|
-        body << "event: #{topic}\n"
+        body << "event: #{topic}\n" unless path_info == topic
         body << "data: #{json}\n\n"
       end
       body.errback do
