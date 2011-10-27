@@ -8,6 +8,9 @@ module Meerkat
         EM.next_tick do
           @sub = EM::Hiredis.connect redis_uri 
           @pub = EM::Hiredis.connect redis_uri 
+          @sub.on :pmessage do |topic, channel, message|
+            @subs[topic].each { |cb| cb.call channel, message }
+          end
         end
       end
 
@@ -22,9 +25,6 @@ module Meerkat
           @subs[topic] = [ callback ]
           EM.next_tick do
             @sub.psubscribe topic 
-            @sub.on :pmessage do |topic, channel, message|
-              @subs[topic].each { |cb| cb.call channel, message }
-            end
           end
         end
         [topic, callback]
