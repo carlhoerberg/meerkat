@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    meerkat (0.4.1)
+    meerkat (0.4.2)
       em-hiredis
       eventmachine
       pg
