@@ -42,10 +42,20 @@ On the client:
 ```javascript
 var source = new EventSource('/stream/mychannel');
 var streamList = document.getElementById('stream');
-source.addEventListener('message', function(e) {
+// Use #onmessage if you only listen to one topic
+source.onmessage = function(e) {
   var li = document.createElement('li');
   li.innerHTML = JSON.parse(e.data);
   streamList.appendChild(li);
+}
+var multiSource = new EventSource('/my/event/*');
+// You have to add custom event listerns when you 
+// listen on multiple topics
+multiSource.addEventListener('/my/event/foo', function(e) {
+  // Do something
+}, false);
+multiSource.addEventListener('/my/event/bar', function(e) {
+  // Do something
 }, false);
 ```
 
