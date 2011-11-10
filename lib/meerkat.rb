@@ -3,7 +3,6 @@ require_relative 'meerkat/rackadapter'
 require_relative 'meerkat/backend/inmemory'
 require_relative 'meerkat/backend/redis'
 require_relative 'meerkat/backend/pg'
-
 require 'yajl'
 
 module Meerkat
@@ -13,9 +12,9 @@ module Meerkat
     @backend = backend
   end
 
-  def publish(route, message)
-    json = Yajl::Encoder.encode message
-    @backend.publish(route, json)
+  def publish(route, message, is_json = false)
+    json = is_json ? message : Yajl::Encoder.encode(message)
+    @backend.publish(route, json) 
   end
 
   def subscribe(route, &callback)

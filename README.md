@@ -5,6 +5,13 @@ Rack middleware for [Server-Sent Events (HTML5 SSE)](http://www.html5rocks.com/e
 
 Requires an [EventMachine](https://github.com/eventmachine/eventmachine#readme) backed server, like [Thin](http://code.macournoyer.com/thin/) or [Rainbows](http://rainbows.rubyforge.org/) (with the EventMachine backend only).
 
+Features: 
+ * Subscribe for single events
+ * Subscribe for multiple events with patterns
+ * Low memory and CPU usage
+ * Works with all proxies (unlike WebSockets)
+ * Allows publishing from server side as well as from the client side (with POST request)
+
 Supported backends: 
 
  * In memory, using [EventMachine Channels](http://eventmachine.rubyforge.org/EventMachine/Channel.html), good for single server usage.
@@ -59,7 +66,7 @@ multiSource.addEventListener('/my/event/bar', function(e) {
 }, false);
 ```
 
-To push things:
+To push things from the client:
 
 ```ruby
 Meerkat.publish "/mychannel", {:any => hash}
@@ -68,6 +75,14 @@ Meerkat.publish "/mychannel/3", any_object
 ```
 
 The published objects will be JSON serialized (with [Yajl](https://github.com/brianmario/yajl-ruby)) before sent to the backend. Deserialize it in the client. 
+
+From the client:
+
+```javascript
+$.post('/stream/mychannel/2', { json: JSON.stringify(my_object) })
+```
+
+A simple POST request, with a parameter called 'json' containing a JSON string.
 
 Read more about Server-Sent Events and the EventSource API on [HTML5Rocks](http://www.html5rocks.com/en/tutorials/eventsource/basics/).
 

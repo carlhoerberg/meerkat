@@ -12,6 +12,30 @@ module Meerkat
     end
 
     def call(env)
+      case env['REQUEST_METHOD'] 
+      when 'GET'
+        listen(env)
+      when 'POST'
+        post(env)
+      else
+        [404, {}, []]
+      end
+    end
+
+    def post(env)
+      req = Rack::Request.new env
+      data = req.params['data'] || req.params['msg'] || req.params['json']
+      if data
+        Meerkat.publish(req.path_info, data, true)
+        [204, {}, []]
+      else 
+        [400, 
+          {'Content-Type' => 'text/plain'},
+          ['Required POST parameter "data", "msg" or "json" is missing']]
+      end
+    end
+
+    def listen(env)
       body = DeferrableBody.new
 
       headers = {
