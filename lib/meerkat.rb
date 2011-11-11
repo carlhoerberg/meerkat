@@ -3,7 +3,7 @@ require_relative 'meerkat/rackadapter'
 require_relative 'meerkat/backend/inmemory'
 require_relative 'meerkat/backend/redis'
 require_relative 'meerkat/backend/pg'
-require 'yajl'
+require 'multi_json'
 
 module Meerkat
   extend self
@@ -13,7 +13,7 @@ module Meerkat
   end
 
   def publish(route, message, is_json = false)
-    json = is_json ? message : Yajl::Encoder.encode(message)
+    json = is_json ? message : MultiJson.encode(message)
     @backend.publish(route, json) 
   end
 
