@@ -74,7 +74,7 @@ Meerkat.publish "/mychannel/2", 'any string'
 Meerkat.publish "/mychannel/3", any_object
 ```
 
-The published objects will be JSON serialized (with [Yajl](https://github.com/brianmario/yajl-ruby)) before sent to the backend. Deserialize it in the client. 
+The published objects will be JSON serialized before sent to the backend. You'll have to deserialize it in the client. 
 
 From the client:
 
