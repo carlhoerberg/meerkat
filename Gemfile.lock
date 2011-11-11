@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    meerkat (0.4.4)
+    meerkat (0.4.5)
       em-hiredis
       eventmachine
       multi_json

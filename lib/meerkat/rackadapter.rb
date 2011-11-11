@@ -1,3 +1,5 @@
+require 'eventmachine'
+
 module Meerkat
   class RackAdapter
     attr_accessor :retry
