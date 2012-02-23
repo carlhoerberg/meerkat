@@ -47,7 +47,11 @@ module Meerkat
       def create_table
         @pg.transaction do |conn|
           table = conn.exec "SELECT true FROM pg_tables WHERE tablename = $1", [TABLENAME]
-          conn.exec "CREATE TABLE #{TABLENAME} (topic varchar(1024), json text, timestamp timestamp default now())" if table.count == 0
+          return unless table.count == 0
+          conn.exec "CREATE TABLE #{TABLENAME} (
+          topic varchar(1024),
+          json text,
+          timestamp timestamp default now())"
         end
       end
 

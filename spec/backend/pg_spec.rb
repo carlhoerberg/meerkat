@@ -9,6 +9,11 @@ describe 'Postgres backend' do
     @b = Meerkat::Backend::PG.new :dbname => 'postgres'
   end
 
+  it 'create required table only once' do
+    @b.send :create_table
+    @b.send :create_table
+  end
+
   it 'can subscribe to partial wildcard' do
     @b.subscribe '/foo/*' do |topic, msg| 
       assert_equal '/foo/bar', topic
