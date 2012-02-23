@@ -26,11 +26,18 @@ Supported backends:
 Usage
 -----
 
+require meerkat, then the backend you want to use, and its dependency. So meerkat/backend/pg requires the pg gem, and meerkat/backend/redis required the em-hiredis gem.
 config.ru: 
 
 ```ruby
 require 'bundler/setup'
 require 'meerkat' 
+require 'pg'
+require 'meerkat/backend/pg' 
+#require 'em-hiredis'
+#require 'meerkat/backend/redis' 
+#require 'eventmachine'
+#require 'meerkat/backend/inmemory' 
 require './app'
 
 #Meerkat.backend = Meerkat::Backend::InMemory.new 

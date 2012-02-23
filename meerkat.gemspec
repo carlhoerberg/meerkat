@@ -24,8 +24,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency "thin-async-test"
   s.add_development_dependency "em-minitest-spec"
 
+  s.add_development_dependency "eventmachine"
+  s.add_development_dependency "em-hiredis"
+  s.add_development_dependency "pg"
+
   s.add_runtime_dependency "multi_json"
-  s.add_runtime_dependency "eventmachine"
-  s.add_runtime_dependency "em-hiredis"
-  s.add_runtime_dependency "pg"
 end
