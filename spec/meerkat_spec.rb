@@ -1,10 +1,9 @@
-require 'bundler/setup'
-require 'minitest/autorun'
 require 'rack/test'
 require 'thin/async/test'
 require './lib/meerkat'
+require './lib/meerkat/backend/inmemory'
 
-describe 'Meerkat' do
+describe Meerkat do
   include Rack::Test::Methods
 
   before do
@@ -23,48 +22,46 @@ describe 'Meerkat' do
 
   it 'should return status 200 and content-type text/event-stream' do
     get '/'
-    assert_equal 200, last_response.status
-    assert_equal 'text/event-stream', last_response.headers['Content-Type']
+    last_response.status.should == 200
+    last_response.headers['Content-Type'].should == 'text/event-stream'
   end
 
   it 'first return a retry value' do
     get '/'
-    assert_equal "retry: 3000\n", last_response.body.lines.first
+    last_response.body.lines.first.should == "retry: 3000\n"
   end
 
   it 'should periodically emit a comment to keep alive the connection' do
     get '/'
-    assert_equal ":", last_response.body.split("\n")[1]
+    last_response.body.split("\n")[1].should == ":"
   end
   
   it 'should publish POST data and treat it like JSON' do
-    mock = MiniTest::Mock.new
-    mock.expect(:publish, nil, ['/foo', '"bar"'])
-    Meerkat.backend = mock
+    backend = stub
+    backend.should_receive(:publish).with('/foo', '"bar"')
+    Meerkat.backend = backend
     post '/foo', :json => '"bar"'
-
-    assert_equal 204, last_response.status
-    assert mock.verify
+    last_response.status.should == 204
   end
 
   it 'should return error 400 when there is no "json" POST parameters' do
     post '/', :foo => 'bar'
-    assert_equal 400, last_response.status
+    last_response.status.should == 400
   end
 
   it 'should return error 400 when there is no POST data' do
     post '/foo'
-    assert_equal 400, last_response.status
+    last_response.status.should == 400
   end
 
   it 'should return 404 for anything but GET and POST requests' do
     delete '/foo'
-    assert_equal 404, last_response.status
+    last_response.status.should == 404
     options '/foo'
-    assert_equal 404, last_response.status
+    last_response.status.should == 404
     head '/foo'
-    assert_equal 404, last_response.status
+    last_response.status.should == 404
     put '/foo'
-    assert_equal 404, last_response.status
+    last_response.status.should == 404
   end
 end

@@ -1,62 +1,63 @@
-require 'minitest/autorun'
-require 'em/minitest/spec'
+require 'eventmachine'
 require './lib/meerkat/backend/pg'
 
 describe 'Postgres backend' do
-  include EM::MiniTest::Spec
-
-  before do
-    @b = Meerkat::Backend::PG.new :dbname => 'postgres'
+  around do |spec|
+    EM.run { spec.call }
   end
 
+  def done!
+    EM.stop
+  end
+
+  subject { Meerkat::Backend::PG.new :dbname => 'postgres' }
+
   it 'create required table only once' do
-    @b.send :create_table
-    @b.send :create_table
+    subject.send :create_table
+    subject.send :create_table
+    done!
   end
 
   it 'can subscribe to partial wildcard' do
-    @b.subscribe '/foo/*' do |topic, msg| 
-      assert_equal '/foo/bar', topic
-      assert_equal 'messsage', msg
+    subject.subscribe '/foo/*' do |topic, msg| 
+      topic.should == '/foo/bar'
+      msg.should == 'messsage'
       done!
     end
-    @b.publish '/foo/bar', 'messsage'
-    wait!
+    subject.publish '/foo/bar', 'messsage'
   end
 
   it 'can subscribe to wildcard' do
-    @b.subscribe '*' do |topic, msg| 
-      assert_equal 'messsage', msg
+    subject.subscribe '*' do |topic, msg| 
+      msg.should == 'messsage'
       done!
     end
-    @b.publish '/', 'messsage'
-    wait!
+    subject.publish '/', 'messsage'
   end
 
   it 'can publish and subscribe' do
-    @b.subscribe '/' do |topic, msg| 
-      assert_equal 'messsage', msg
+    subject.subscribe '/' do |topic, msg| 
+      msg.should == 'messsage'
       done!
     end
-    @b.publish '/', 'messsage'
-    wait!
+    subject.publish '/', 'messsage'
   end
 
   it 'can publish and subscribe multiple messages' do
     i = 5
     j = 0
-    @b.subscribe '/' do |topic, msg| 
+    subject.subscribe '/' do |topic, msg| 
       j += 1
-      assert_equal 'messsage', msg
+      msg.should == 'messsage'
       done! if j == i
     end
-    i.times { @b.publish '/', 'messsage' }
-    wait!
+    i.times { subject.publish '/', 'messsage' }
   end
 
   it 'can unsubscribe' do
-    sid = @b.subscribe 'route' do |topic, msg| end
-    @b.unsubscribe sid
+    sid = subject.subscribe 'route' do |topic, msg| end
+    subject.unsubscribe sid
+    done!
   end
 end
 

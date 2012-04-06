@@ -1,33 +1,34 @@
-require 'minitest/autorun'
-require 'em/minitest/spec'
 require './lib/meerkat/backend/amqp'
+require 'eventmachine'
 
 describe Meerkat::Backend::AMQP do
-  include EM::MiniTest::Spec
-  subject { Meerkat::Backend::AMQP.new }
+  around do |spec|
+    EM.run { spec.call }
+  end
 
   it 'can publish and subscribe' do
     subject.subscribe 'route' do |topic, msg| 
-      assert_equal 'route', topic
-      assert_equal 'foo', msg
-      done!
+      topic.should == 'route'
+      msg.should == 'foo'
+      EM.stop
     end
-    EM.next_tick { subject.publish 'route', 'foo' }
-    wait!
+    EM.add_timer(0.1) { subject.publish 'route', 'foo' }
   end
 
   it 'can subscribe to wildcards' do
     subject.subscribe 'foo.*' do |topic, msg| 
-      assert_equal 'foo.bar', topic
-      assert_equal 'barfoo', msg
-      done!
+      topic.should == 'foo.bar'
+      msg.should == 'barfoo'
+      EM.stop
     end
-    EM.next_tick { subject.publish 'foo.bar', 'barfoo' }
-    wait!
+    EM.add_timer(0.1) { subject.publish 'foo.bar', 'barfoo' }
   end
 
   it 'can unsubscribe' do
     sid = subject.subscribe('route') { |topic, msg| }
-    subject.unsubscribe sid
+    EM.add_timer(0.1) do
+      subject.unsubscribe sid      
+      EM.stop 
+    end
   end
 end

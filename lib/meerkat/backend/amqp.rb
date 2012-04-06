@@ -3,10 +3,8 @@ require 'amqp'
 module Meerkat
   module Backend
     class AMQP
-      def initialize(amqp_url = 'amqp://guest:guest@localhost/')
-        EM.next_tick do
-          @conn = ::AMQP.connect amqp_url
-        end
+      def initialize(amqp_url = 'amqp://guest:guest@localhost')
+        @conn = ::AMQP.connect amqp_url
       end
 
       def publish(topic, json)
@@ -20,7 +18,7 @@ module Meerkat
           ch.queue do |queue|
             queue.bind(ch.topic("meerkat"), :routing_key => topic)
             queue.subscribe do |headers, payload|
-              callback.call header.routing_key, payload
+              callback.call headers.routing_key, payload
             end
           end
         end

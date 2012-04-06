@@ -1,34 +1,36 @@
-require 'minitest/autorun'
-require 'em/minitest/spec'
 require './lib/meerkat/backend/inmemory'
+require 'eventmachine'
 
-describe 'The in memory backend' do
-  include EM::MiniTest::Spec
-
-  before do
-    @im = Meerkat::Backend::InMemory.new
+describe Meerkat::Backend::InMemory do
+  around do |spec|
+    EM.run { spec.call }
   end
 
   it 'can publish and subscribe' do
-    @im.subscribe 'route' do |topic, msg| 
-      assert_equal 'route', topic
-      assert_equal 'foo', msg
-      done!
+    subject.subscribe 'route' do |topic, msg| 
+      topic.should == 'route'
+      msg.should == 'foo'
+      EM.stop
     end
-    @im.publish 'route', 'foo'
-    wait!
+    EM.next_tick do 
+      subject.publish 'route', 'foo'
+    end
   end
+
   it 'can subscribe to wildcards' do
-    @im.subscribe '/foo/*' do |topic, msg| 
-      assert_equal '/foo/bar', topic
-      assert_equal 'barfoo', msg
-      done!
+    subject.subscribe '/foo/*' do |topic, msg| 
+      topic.should == '/foo/bar'
+      msg.should == 'barfoo'
+      EM.stop
     end
-    @im.publish '/foo/bar', 'barfoo'
-    wait!
+    EM.next_tick do 
+      subject.publish '/foo/bar', 'barfoo'
+    end
   end
+
   it 'can unbsubscribe' do
-    sid = @im.subscribe 'route' do |topic, msg| end
-    @im.unsubscribe sid
+    sid = subject.subscribe 'route' do |topic, msg| end
+    subject.unsubscribe sid
+    EM.stop
   end
 end
