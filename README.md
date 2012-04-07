@@ -15,6 +15,7 @@ Features:
 Supported backends: 
 
  * In memory, using [EventMachine Channels](http://eventmachine.rubyforge.org/EventMachine/Channel.html), good for single server usage.
+ * RabbitMQ (AMQP), using the [AMQP gem](https://github.com/amqp/amqp-ruby), a topic exchange and one channel per subscription (recommended alternative)
  * Redis, using [em-hiredis](https://github.com/mloughran/em-hiredis#readme) and the [Pub/Sub API](http://redis.io/topics/pubsub). 
  * Postgres, using the [Notify/Listen API](http://www.postgresql.org/docs/9.1/static/sql-notify.html). 
    * When a message is published the topic and json payload is inserted into the 'meerkat_pubsub' table, and then a NOTIFY is issued.
@@ -31,12 +32,12 @@ Gemfile:
 
 ```ruby
 gem 'meerkat'
+gem 'amqp'
+# or
 gem 'pg'
-#or
+# or
 gem 'em-hiredis'
 ```
-
-
 Require meerkat and the backend you would like to use. 
 
 config.ru: 
@@ -44,14 +45,16 @@ config.ru:
 ```ruby
 require 'bundler/setup'
 require 'meerkat' 
-require 'meerkat/backend/pg' 
+require 'meerkat/backend/amqp' 
+#require 'meerkat/backend/pg' 
 #require 'meerkat/backend/redis' 
 #require 'meerkat/backend/inmemory' 
 require './app'
 
 #Meerkat.backend = Meerkat::Backend::InMemory.new 
+Meerkat.backend = Meerkat::Backend::AMQP.new 'amqp://guest:guest@localhost'
 #Meerkat.backend = Meerkat::Backend::Redis.new 'redis://localhost/0'
-Meerkat.backend = Meerkat::Backend::PG.new :dbname => 'postgres'
+#Meerkat.backend = Meerkat::Backend::PG.new :dbname => 'postgres'
 map '/' do
   run App
 end
@@ -95,10 +98,10 @@ The published objects will be JSON serialized before sent to the backend. You'll
 From the client:
 
 ```javascript
-$.post('/stream/mychannel/2', { json: JSON.stringify(my_object) })
+$.post('/stream/mychannel/2', { data: JSON.stringify(my_object) })
 ```
 
-A simple POST request, with a parameter called 'json' containing a JSON string.
+A simple POST request, with a parameter called 'data' (or 'json' or 'msg') containing a JSON string.
 
 Read more about Server-Sent Events and the EventSource API on [HTML5Rocks](http://www.html5rocks.com/en/tutorials/eventsource/basics/).
 
