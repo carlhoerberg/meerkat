@@ -3,8 +3,6 @@ Meerkat
 
 Rack middleware for [Server-Sent Events (HTML5 SSE)](http://www.html5rocks.com/en/tutorials/eventsource/basics/).
 
-Requires an [EventMachine](https://github.com/eventmachine/eventmachine#readme) backed server, like [Thin](http://code.macournoyer.com/thin/) or [Rainbows](http://rainbows.rubyforge.org/) (with the EventMachine backend only).
-
 Features: 
 
 * Realtime events
@@ -31,7 +29,7 @@ Supported backends:
 Usage
 -----
 
-Put meerkat and pg or em-hiredis in your Gemfile, depending on which backend you plan to use. 
+Put meerkat and amqp, pg or em-hiredis in your Gemfile, depending on which backend you plan to use. 
 Gemfile:
 
 ```ruby
@@ -42,7 +40,10 @@ gem 'pg'
 # or
 gem 'em-hiredis'
 ```
+
 Require meerkat and the backend you would like to use. 
+
+Meerkat is based on [EventMachine ](http://rubyeventmachine.com/) and thus requires [Thin](http://code.macournoyer.com/thin/) or [Rainbows](http://rainbows.rubyforge.org/) (with the EventMachine backend) as web server.
 
 config.ru: 
 
@@ -62,6 +63,7 @@ Meerkat.backend = Meerkat::Backend::AMQP.new 'amqp://guest:guest@localhost'
 map '/' do
   run App
 end
+
 map '/stream' do
   run Meerkat::RackAdapter.new
 end
