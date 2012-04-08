@@ -15,7 +15,7 @@ module Meerkat
 
       def subscribe(topic, &callback)
         ::AMQP::Channel.new @conn do |ch|
-          ch.queue do |queue|
+          ch.queue('', :auto_delete => true) do |queue|
             queue.bind(ch.topic("meerkat"), :routing_key => topic)
             queue.subscribe do |headers, payload|
               callback.call headers.routing_key, payload
