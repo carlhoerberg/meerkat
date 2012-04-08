@@ -116,10 +116,9 @@ Read more about Server-Sent Events and the EventSource API on [HTML5Rocks](http:
 Examples
 --------
 
-A simple demo can be seen here: 
-http://meerkat-demo.herokuapp.com/
+A simple demo can be seen here: http://meerkat-demo.herokuapp.com/
 
-It's deployed on [Heroku's Cedar stack](http://devcenter.heroku.com/articles/cedar). It's using the Redis backend, thanks to [Redis To Go](https://redistogo.com/)'s free Nano offering.
+It's deployed on [Heroku's Cedar stack](http://devcenter.heroku.com/articles/cedar). It's using the AMQP backend, provided by [CloudAMQP](http://www.cloudamqp.com/) and the free Lemur plan.
 
 License
 -------
