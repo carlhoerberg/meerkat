@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Meerkat by carlhoerberg</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Meerkat</h1>
+        <p>Rack middleware for Server-Sent Events (HTML5 SSE)</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/carlhoerberg/meerkat" class="button fork"><strong>Fork On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/carlhoerberg/meerkat/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/carlhoerberg/meerkat/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>Meerkat</h1>
+
+<p>Rack middleware for <a href="http://www.html5rocks.com/en/tutorials/eventsource/basics/">Server-Sent Events (HTML5 SSE)</a>.</p>
+
+<p>Requires an <a href="https://github.com/eventmachine/eventmachine#readme">EventMachine</a> backed server, like <a href="http://code.macournoyer.com/thin/">Thin</a> or <a href="http://rainbows.rubyforge.org/">Rainbows</a> (with the EventMachine backend only).</p>
+
+<p>Features: </p>
+
+<ul>
+<li>Realtime events</li>
+<li>Extremely efficent</li>
+<li>Broad browser support (both desktop and mobile browsers)</li>
+<li>Works with all proxies (unlike WebSockets)</li>
+<li>Subscribe to single events</li>
+<li>Subscribe to multiple events via patterns</li>
+<li>Publish messages from the server</li>
+<li>Publish messages from the client (via POST)</li>
+</ul><p>Supported backends: </p>
+
+<ul>
+<li>In memory, using <a href="http://eventmachine.rubyforge.org/EventMachine/Channel.html">EventMachine Channels</a>, good for single server usage.</li>
+<li>RabbitMQ (AMQP), using the <a href="https://github.com/amqp/amqp-ruby">AMQP gem</a> and the Pub/Sub pattern (Topic exchange + anonymous queues with pattern matching). AMQP is the most recommened alternative.</li>
+<li>Redis, using <a href="https://github.com/mloughran/em-hiredis#readme">em-hiredis</a> and the <a href="http://redis.io/topics/pubsub">Pub/Sub API</a>. </li>
+<li>Postgres, using the <a href="http://www.postgresql.org/docs/9.1/static/sql-notify.html">Notify/Listen API</a>. 
+
+<ul>
+<li>When a message is published the topic and json payload is inserted into the 'meerkat_pubsub' table, and then a NOTIFY is issued.</li>
+<li>Listening clients recivies the notification and reads the message from the table and writes it to the Event Stream of its clients.</li>
+<li>On the next publish all messages older than 5 seconds are deleted. </li>
+<li>No polling is ever done.</li>
+<li>This works with PostgreSQL 8 and higher (tested with 8.3 and 9.1). </li>
+</ul>
+</li>
+</ul><h2>Usage</h2>
+
+<p>Put meerkat and pg or em-hiredis in your Gemfile, depending on which backend you plan to use. 
+Gemfile:</p>
+
+<div class="highlight">
+<pre><span class="n">gem</span> <span class="s1">'meerkat'</span>
+<span class="n">gem</span> <span class="s1">'amqp'</span>
+<span class="c1"># or</span>
+<span class="n">gem</span> <span class="s1">'pg'</span>
+<span class="c1"># or</span>
+<span class="n">gem</span> <span class="s1">'em-hiredis'</span>
+</pre>
+</div>
+
+
+<p>Require meerkat and the backend you would like to use. </p>
+
+<p>config.ru: </p>
+
+<div class="highlight">
+<pre><span class="nb">require</span> <span class="s1">'bundler/setup'</span>
+<span class="nb">require</span> <span class="s1">'meerkat'</span> 
+<span class="nb">require</span> <span class="s1">'meerkat/backend/amqp'</span> 
+<span class="c1">#require 'meerkat/backend/pg' </span>
+<span class="c1">#require 'meerkat/backend/redis' </span>
+<span class="c1">#require 'meerkat/backend/inmemory' </span>
+<span class="nb">require</span> <span class="s1">'./app'</span>
+
+<span class="c1">#Meerkat.backend = Meerkat::Backend::InMemory.new </span>
+<span class="no">Meerkat</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="no">Meerkat</span><span class="o">::</span><span class="no">Backend</span><span class="o">::</span><span class="no">AMQP</span><span class="o">.</span><span class="n">new</span> <span class="s1">'amqp://guest:guest@localhost'</span>
+<span class="c1">#Meerkat.backend = Meerkat::Backend::Redis.new 'redis://localhost/0'</span>
+<span class="c1">#Meerkat.backend = Meerkat::Backend::PG.new :dbname =&gt; 'postgres'</span>
+<span class="n">map</span> <span class="s1">'/'</span> <span class="k">do</span>
+  <span class="n">run</span> <span class="no">App</span>
+<span class="k">end</span>
+<span class="n">map</span> <span class="s1">'/stream'</span> <span class="k">do</span>
+  <span class="n">run</span> <span class="no">Meerkat</span><span class="o">::</span><span class="no">RackAdapter</span><span class="o">.</span><span class="n">new</span>
+<span class="k">end</span>
+</pre>
+</div>
+
+
+<p>On the client:</p>
+
+<div class="highlight">
+<pre><span class="kd">var</span> <span class="nx">source</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">EventSource</span><span class="p">(</span><span class="s1">'/stream/foo'</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">streamList</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">'stream'</span><span class="p">);</span>
+<span class="c1">// Use #onmessage if you only listen to one topic</span>
+<span class="nx">source</span><span class="p">.</span><span class="nx">onmessage</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">li</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'li'</span><span class="p">);</span>
+  <span class="nx">li</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
+  <span class="nx">streamList</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">li</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">multiSource</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">EventSource</span><span class="p">(</span><span class="s1">'/stream/foo.*'</span><span class="p">);</span>
+<span class="c1">// You have to add custom event listerns when you </span>
+<span class="c1">// listen on multiple topics</span>
+<span class="nx">multiSource</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">'foo.bar'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Do something</span>
+<span class="p">},</span> <span class="kc">false</span><span class="p">);</span>
+<span class="nx">multiSource</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">'foo.foo'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Do something</span>
+<span class="p">},</span> <span class="kc">false</span><span class="p">);</span>
+</pre>
+</div>
+
+
+<p>To push things from the server:</p>
+
+<div class="highlight">
+<pre><span class="no">Meerkat</span><span class="o">.</span><span class="n">publish</span> <span class="s2">"foo.bar"</span><span class="p">,</span> <span class="p">{</span> <span class="ss">:any</span> <span class="o">=&gt;</span> <span class="s1">'hash'</span> <span class="p">}</span> <span class="c1"># the hash will automatically be json encoded</span>
+<span class="no">Meerkat</span><span class="o">.</span><span class="n">publish</span> <span class="s2">"foo.bar"</span><span class="p">,</span> <span class="s1">'any string'</span>
+<span class="no">Meerkat</span><span class="o">.</span><span class="n">publish</span> <span class="s2">"foo.foo"</span><span class="p">,</span> <span class="n">myobj</span><span class="o">.</span><span class="n">to_json</span><span class="p">,</span> <span class="kp">true</span> <span class="c1"># the third parameter indicates that the message already is json encoded</span>
+</pre>
+</div>
+
+
+<p>The published objects will be JSON serialized before sent to the backend. You'll have to deserialize it in the client. </p>
+
+<p>From the client:</p>
+
+<div class="highlight">
+<pre><span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">'/stream'</span><span class="p">,</span> <span class="p">{</span> <span class="nx">topic</span><span class="o">:</span> <span class="s1">'foo.bar'</span><span class="p">,</span> <span class="nx">data</span><span class="o">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">my_object</span><span class="p">)</span> <span class="p">})</span>
+<span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">'/stream/foo.bar'</span><span class="p">,</span> <span class="p">{</span> <span class="nx">data</span><span class="o">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">my_object</span><span class="p">)</span> <span class="p">})</span>
+</pre>
+</div>
+
+
+<p>A simple POST request, with a parameter called 'data' (or 'json' or 'msg') containing a JSON string.</p>
+
+<p>The topic can be specified other as a post parameter or in the path.</p>
+
+<p>Read more about Server-Sent Events and the EventSource API on <a href="http://www.html5rocks.com/en/tutorials/eventsource/basics/">HTML5Rocks</a>.</p>
+
+<h2>Examples</h2>
+
+<p>A simple demo can be seen here: <a href="http://meerkat-demo.herokuapp.com/">http://meerkat-demo.herokuapp.com/</a></p>
+
+<p>It's deployed on <a href="http://devcenter.heroku.com/articles/cedar">Heroku's Cedar stack</a>. It's using the AMQP backend, provided by <a href="http://www.cloudamqp.com/">CloudAMQP</a> and the free Lemur plan.</p>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/carlhoerberg">carlhoerberg</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+  </body>
+</html>
