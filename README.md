@@ -7,26 +7,26 @@ Requires an [EventMachine](https://github.com/eventmachine/eventmachine#readme) 
 
 Features: 
 
- * Realtime events
- * Extremely efficent
- * Broad browser support (both desktop and mobile browsers)
- * Works with all proxies (unlike WebSockets)
- * Subscribe to single events
- * Subscribe to multiple events via patterns
- * Publish messages from the server
- * Publish messages from the client (via POST)
+* Realtime events
+* Extremely efficent
+* Broad browser support (both desktop and mobile browsers)
+* Works with all proxies (unlike WebSockets)
+* Subscribe to single events
+* Subscribe to multiple events via patterns
+* Publish messages from the server
+* Publish messages from the client (via POST)
 
 Supported backends: 
 
- * In memory, using [EventMachine Channels](http://eventmachine.rubyforge.org/EventMachine/Channel.html), good for single server usage.
- * RabbitMQ (AMQP), using the [AMQP gem](https://github.com/amqp/amqp-ruby) and the Pub/Sub pattern (Topic exchange + anonymous queues with pattern matching). AMQP is the most recommened alternative.
- * Redis, using [em-hiredis](https://github.com/mloughran/em-hiredis#readme) and the [Pub/Sub API](http://redis.io/topics/pubsub). 
- * Postgres, using the [Notify/Listen API](http://www.postgresql.org/docs/9.1/static/sql-notify.html). 
-   * When a message is published the topic and json payload is inserted into the 'meerkat_pubsub' table, and then a NOTIFY is issued.
-   * Listening clients recivies the notification and reads the message from the table and writes it to the Event Stream of its clients.
-   * On the next publish all messages older than 5 seconds are deleted. 
-   * No polling is ever done.
-   * This works with PostgreSQL 8 and higher (tested with 8.3 and 9.1). 
+* In memory, using [EventMachine Channels](http://eventmachine.rubyforge.org/EventMachine/Channel.html), good for single server usage.
+* RabbitMQ (AMQP), using the [AMQP gem](https://github.com/amqp/amqp-ruby) and the Pub/Sub pattern (Topic exchange + anonymous queues with pattern matching). AMQP is the most recommened alternative.
+* Redis, using [em-hiredis](https://github.com/mloughran/em-hiredis#readme) and the [Pub/Sub API](http://redis.io/topics/pubsub). 
+* Postgres, using the [Notify/Listen API](http://www.postgresql.org/docs/9.1/static/sql-notify.html). 
+  * When a message is published the topic and json payload is inserted into the 'meerkat_pubsub' table, and then a NOTIFY is issued.
+  * Listening clients recivies the notification and reads the message from the table and writes it to the Event Stream of its clients.
+  * On the next publish all messages older than 5 seconds are deleted. 
+  * No polling is ever done.
+  * This works with PostgreSQL 8 and higher (tested with 8.3 and 9.1). 
 
 Usage
 -----
