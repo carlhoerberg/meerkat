@@ -28,7 +28,7 @@ module Meerkat
       req = Rack::Request.new env
       data = req.params['data'] || req.params['msg'] || req.params['json']
       if data
-        Meerkat.publish(req.path_info, data, true)
+        Meerkat.publish(req.path_info[1..-1], data, true)
         [204, {}, []]
       else 
         [400, 
@@ -49,7 +49,7 @@ module Meerkat
       EM.add_periodic_timer(@keep_alive) { body << ":\n" }
       EM.add_timer(@timeout) { body.succeed } if @timeout
 
-      path_info = Rack::Utils.unescape env["PATH_INFO"]
+      path_info = Rack::Utils.unescape(env["PATH_INFO"])[1..-1]
       sub = Meerkat.subscribe(path_info) do |topic, json|
         body << "event: #{topic}\n" unless path_info == topic
         body << "data: #{json}\n\n"
