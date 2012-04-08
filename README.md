@@ -6,16 +6,20 @@ Rack middleware for [Server-Sent Events (HTML5 SSE)](http://www.html5rocks.com/e
 Requires an [EventMachine](https://github.com/eventmachine/eventmachine#readme) backed server, like [Thin](http://code.macournoyer.com/thin/) or [Rainbows](http://rainbows.rubyforge.org/) (with the EventMachine backend only).
 
 Features: 
- * Subscribe for single events
- * Subscribe for multiple events via patterns
- * Low memory and CPU usage
+
+ * Realtime events
+ * Extremely efficent
+ * Broad browser support (both desktop and mobile browsers)
  * Works with all proxies (unlike WebSockets)
- * Allows publishing from server side as well as from the client side (with POST request)
+ * Subscribe to single events
+ * Subscribe to multiple events via patterns
+ * Publish messages from the server
+ * Publish messages from the client (via POST)
 
 Supported backends: 
 
  * In memory, using [EventMachine Channels](http://eventmachine.rubyforge.org/EventMachine/Channel.html), good for single server usage.
- * RabbitMQ (AMQP), using the [AMQP gem](https://github.com/amqp/amqp-ruby), a topic exchange and one channel per subscription (recommended alternative)
+ * RabbitMQ (AMQP), using the [AMQP gem](https://github.com/amqp/amqp-ruby) and the Pub/Sub pattern (Topic exchange + anonymous queues with pattern matching). AMQP is the most recommened alternative.
  * Redis, using [em-hiredis](https://github.com/mloughran/em-hiredis#readme) and the [Pub/Sub API](http://redis.io/topics/pubsub). 
  * Postgres, using the [Notify/Listen API](http://www.postgresql.org/docs/9.1/static/sql-notify.html). 
    * When a message is published the topic and json payload is inserted into the 'meerkat_pubsub' table, and then a NOTIFY is issued.
