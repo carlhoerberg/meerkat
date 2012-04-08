@@ -1,41 +1,36 @@
-require 'minitest/autorun'
-require 'em/minitest/spec'
 require './lib/meerkat/backend/redis'
+require 'eventmachine'
 
-describe 'Redis backend' do
-  include EM::MiniTest::Spec
+describe Meerkat::Backend::Redis do
+  around do |spec|
+    EM.run { spec.call }
+  end
 
   it 'can publish and subscribe to wildcards' do
-    b = Meerkat::Backend::Redis.new
-    b.subscribe '/foo/*' do |topic, msg| 
-      assert_equal '/foo/bar', topic
-      assert_equal 'messsage', msg
-      done!
+    subject.subscribe '/foo/*' do |topic, msg| 
+      topic.should == '/foo/bar'
+      msg.should == 'messsage'
+      EM.stop
     end
     EM.next_tick {
-      b.publish '/foo/bar', 'messsage'
+      subject.publish '/foo/bar', 'messsage'
     }
-    wait!
   end
 
   it 'can publish and subscribe' do
-    b = Meerkat::Backend::Redis.new
-    b.subscribe '/' do |topic, msg| 
-      assert_equal 'messsage', msg
-      done!
+    subject.subscribe '/' do |topic, msg| 
+      msg.should == 'messsage'
+      EM.stop
     end
     EM.next_tick {
-      b.publish '/', 'messsage'
+      subject.publish '/', 'messsage'
     }
-    wait!
   end
 
   it 'can unsubscribe' do
-    b = Meerkat::Backend::Redis.new
-    sid = b.subscribe 'route' do |msg| 
-      @recivied = msg
-    end
-    b.unsubscribe sid
+    sid = subject.subscribe('route')
+    subject.unsubscribe sid
+    EM.stop
   end
 end
 

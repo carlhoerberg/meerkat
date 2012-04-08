@@ -9,13 +9,16 @@ module Meerkat
     @backend = backend
   end
 
-  def publish(route, message, is_json = false)
+  def publish(topic, message, is_json = false)
+    raise "Topic is required" if topic.nil?
+    raise "Message is required" if message.nil?
     json = is_json ? message : MultiJson.encode(message)
-    @backend.publish(route, json) 
+    @backend.publish(topic, json) 
   end
 
-  def subscribe(route, &callback)
-    @backend.subscribe(route, &callback)
+  def subscribe(topic, &callback)
+    raise "Topic is required" if topic.nil?
+    @backend.subscribe(topic, &callback)
   end
 
   def unsubscribe(sid)
