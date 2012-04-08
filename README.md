@@ -7,7 +7,7 @@ Requires an [EventMachine](https://github.com/eventmachine/eventmachine#readme) 
 
 Features: 
  * Subscribe for single events
- * Subscribe for multiple events with patterns
+ * Subscribe for multiple events via patterns
  * Low memory and CPU usage
  * Works with all proxies (unlike WebSockets)
  * Allows publishing from server side as well as from the client side (with POST request)
@@ -66,7 +66,7 @@ end
 On the client:
 
 ```javascript
-var source = new EventSource('/stream/mychannel');
+var source = new EventSource('/stream/foo');
 var streamList = document.getElementById('stream');
 // Use #onmessage if you only listen to one topic
 source.onmessage = function(e) {
@@ -74,23 +74,24 @@ source.onmessage = function(e) {
   li.innerHTML = JSON.parse(e.data);
   streamList.appendChild(li);
 }
-var multiSource = new EventSource('/my/event/*');
+
+var multiSource = new EventSource('/stream/foo.*');
 // You have to add custom event listerns when you 
 // listen on multiple topics
-multiSource.addEventListener('/my/event/foo', function(e) {
+multiSource.addEventListener('foo.bar', function(e) {
   // Do something
 }, false);
-multiSource.addEventListener('/my/event/bar', function(e) {
+multiSource.addEventListener('foo.foo', function(e) {
   // Do something
 }, false);
 ```
 
-To push things from the client:
+To push things from the server:
 
 ```ruby
-Meerkat.publish "/mychannel", {:any => hash}
-Meerkat.publish "/mychannel/2", 'any string'
-Meerkat.publish "/mychannel/3", any_object
+Meerkat.publish "foo.bar", { :any => 'hash' } # the hash will automatically be json encoded
+Meerkat.publish "foo.bar", 'any string'
+Meerkat.publish "foo.foo", myobj.to_json, true # the third parameter indicates that the message already is json encoded
 ```
 
 The published objects will be JSON serialized before sent to the backend. You'll have to deserialize it in the client. 
@@ -98,10 +99,13 @@ The published objects will be JSON serialized before sent to the backend. You'll
 From the client:
 
 ```javascript
-$.post('/stream/mychannel/2', { data: JSON.stringify(my_object) })
+$.post('/stream', { topic: 'foo.bar', data: JSON.stringify(my_object) })
+$.post('/stream/foo.bar', { data: JSON.stringify(my_object) })
 ```
 
 A simple POST request, with a parameter called 'data' (or 'json' or 'msg') containing a JSON string.
+
+The topic can be specified other as a post parameter or in the path.
 
 Read more about Server-Sent Events and the EventSource API on [HTML5Rocks](http://www.html5rocks.com/en/tutorials/eventsource/basics/).
 
