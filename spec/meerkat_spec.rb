@@ -44,6 +44,16 @@ describe Meerkat do
     last_response.status.should == 204
   end
 
+  it 'uses path info as topic' do
+    post '/foo.bar', msg: 'foobar'
+    last_response.status.should == 204
+  end
+
+  it 'can use topic post params as topic' do
+    post '/', topic: 'foo.bar', msg: 'foobar'
+    last_response.status.should == 204
+  end
+
   it 'returns error 400 when there is no "json" POST parameters' do
     post '/', :foo => 'bar'
     last_response.status.should == 400

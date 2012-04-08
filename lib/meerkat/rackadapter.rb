@@ -26,15 +26,14 @@ module Meerkat
 
     def post(env)
       req = Rack::Request.new env
+      topic = req.path_info[1..-1]
+      topic = req.params['topic'] if topic.empty? 
       data = req.params['data'] || req.params['msg'] || req.params['json']
-      if data
-        Meerkat.publish(req.path_info[1..-1], data, true)
-        [204, {}, []]
-      else 
-        [400, 
-          {'Content-Type' => 'text/plain'},
-          ['Required POST parameter "data", "msg" or "json" is missing']]
-      end
+
+      Meerkat.publish(topic, data, true)
+      [204, {}, []]
+    rescue Exception => e
+      [400, {'Content-Type' => 'text/plain'}, [e.message]]
     end
 
     def listen(env)
